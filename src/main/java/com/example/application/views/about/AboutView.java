@@ -1,5 +1,6 @@
 package com.example.application.views.about;
 
+import com.example.application.views.MainLayout;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Paragraph;
@@ -11,7 +12,7 @@ import com.vaadin.flow.theme.lumo.LumoUtility.Margin;
 import org.vaadin.lineawesome.LineAwesomeIconUrl;
 
 @PageTitle("About")
-@Route("about")
+@Route(value = "about", layout = MainLayout.class)
 @Menu(order = 1, icon = LineAwesomeIconUrl.FILE)
 public class AboutView extends VerticalLayout {
 

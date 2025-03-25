@@ -1,5 +1,6 @@
 package com.example.application.views;
 
+import com.example.application.clients.sellauto.client.SellAutoRestClient;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.html.Footer;
@@ -7,14 +8,18 @@ import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Header;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.SvgIcon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.sidenav.SideNav;
 import com.vaadin.flow.component.sidenav.SideNavItem;
 import com.vaadin.flow.router.Layout;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.server.menu.MenuConfiguration;
 import com.vaadin.flow.server.menu.MenuEntry;
 import com.vaadin.flow.theme.lumo.LumoUtility;
+import org.vaadin.lineawesome.LineAwesomeIconUrl;
+
 import java.util.List;
 
 /**
@@ -24,9 +29,12 @@ import java.util.List;
 @AnonymousAllowed
 public class MainLayout extends AppLayout {
 
+    private final SellAutoRestClient sellAutoRestClient;
+
     private H1 viewTitle;
 
-    public MainLayout() {
+    public MainLayout(SellAutoRestClient sellAutoRestClient) {
+        this.sellAutoRestClient = sellAutoRestClient;
         setPrimarySection(Section.DRAWER);
         addDrawerContent();
         addHeaderContent();
@@ -43,7 +51,7 @@ public class MainLayout extends AppLayout {
     }
 
     private void addDrawerContent() {
-        Span appName = new Span("sellauto-client");
+        Span appName = new Span("Sell Auto");
         appName.addClassNames(LumoUtility.FontWeight.SEMIBOLD, LumoUtility.FontSize.LARGE);
         Header header = new Header(appName);
 
@@ -55,22 +63,35 @@ public class MainLayout extends AppLayout {
     private SideNav createNavigation() {
         SideNav nav = new SideNav();
 
-        List<MenuEntry> menuEntries = MenuConfiguration.getMenuEntries();
-        menuEntries.forEach(entry -> {
-            if (entry.icon() != null) {
-                nav.addItem(new SideNavItem(entry.title(), entry.path(), new SvgIcon(entry.icon())));
-            } else {
-                nav.addItem(new SideNavItem(entry.title(), entry.path()));
-            }
-        });
+//        List<MenuEntry> menuEntries = MenuConfiguration.getMenuEntries();
+//        menuEntries.forEach(entry -> {
+//            if (entry.icon() != null) {
+//                nav.addItem(new SideNavItem(entry.title(), entry.path(), new SvgIcon(entry.icon())));
+//            } else {
+//                nav.addItem(new SideNavItem(entry.title(), entry.path()));
+//            }
+//        });
+        var currentLogin = sellAutoRestClient.getCurrentLogin();
+
+        if (currentLogin != null) {
+            nav.addItem(new SideNavItem("Профиль", "profile",
+                    VaadinIcon.USER.create()));
+            nav.addItem(new SideNavItem("Чаты", "",
+                    VaadinIcon.MAILBOX.create()));
+        } else {
+            nav.addItem(new SideNavItem("Вход / Регистрация", "login",
+                    VaadinIcon.SIGN_IN.create()));
+        }
+
+        nav.addItem(new SideNavItem("Все истории", "histories", VaadinIcon.ARCHIVE.create()));
+        nav.addItem(new SideNavItem("История платежей", "payments", VaadinIcon.MONEY_DEPOSIT.create()));
+        nav.addItem(new SideNavItem("Истории ждут выплаты", "approvedHistories", VaadinIcon.BOOK.create()));
 
         return nav;
     }
 
     private Footer createFooter() {
-        Footer layout = new Footer();
-
-        return layout;
+        return new Footer();
     }
 
     @Override
