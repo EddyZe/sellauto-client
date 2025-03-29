@@ -7,7 +7,7 @@ import com.example.application.clients.sellauto.payloads.ProfilePayload;
 import com.example.application.enums.Role;
 import com.example.application.exceptions.SellAutoApiException;
 import com.example.application.views.MainLayout;
-import com.example.application.views.admin.AdminPanel;
+import com.example.application.views.adminpanel.MainAdminView;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -68,20 +68,20 @@ public class ProfileView extends VerticalLayout {
 
             var firstName = new TextField("Имя");
             firstName.setValue(profile.getFirstName());
-            firstName.setWidth("35%");
+            firstName.setWidthFull();
             firstName.setReadOnly(true);
             var lastName = new TextField("Фамилия");
-            lastName.setWidth("35%");
+            lastName.setWidthFull();
             lastName.setValue(profile.getLastName());
             lastName.setReadOnly(true);
 
             var phoneNumber = new TextField("Номер телефона");
-            phoneNumber.setWidth("35%");
+            phoneNumber.setWidthFull();
             phoneNumber.setValue(profile.getAccount().getPhoneNumber());
             phoneNumber.setReadOnly(true);
 
             var email = new TextField("Email");
-            email.setWidth("35%");
+            email.setWidthFull();
             email.setValue(profile.getAccount().getEmail());
             email.setReadOnly(true);
 
@@ -176,7 +176,7 @@ public class ProfileView extends VerticalLayout {
 
     private void addAdminPanelButton(ProfilePayload profile, HorizontalLayout headerLayout) {
         if (profile.getAccount().getRole() == Role.ROLE_ADMIN) {
-            var routerLink = new RouterLink("Панель администратора", AdminPanel.class);
+            var routerLink = new RouterLink("Панель администратора", MainAdminView.class);
             var routerLayout = new VerticalLayout(routerLink);
             routerLayout.setWidthFull();
             routerLayout.setDefaultHorizontalComponentAlignment(Alignment.END);

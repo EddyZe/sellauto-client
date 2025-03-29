@@ -3,7 +3,6 @@ package com.example.application.views.auth;
 import com.example.application.clients.sellauto.client.SellAutoRestClient;
 import com.example.application.clients.sellauto.payloads.SingUpPayload;
 import com.example.application.exceptions.SellAutoApiException;
-import com.example.application.views.MainLayout;
 import com.example.application.views.profile.ProfileView;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -27,7 +26,7 @@ import com.vaadin.flow.router.RouterLink;
 
 
 @PageTitle("Регистрация")
-@Route(value = "sing-up", layout = MainLayout.class)
+@Route(value = "sing-up")
 public class SingUpView extends VerticalLayout {
 
     private final SellAutoRestClient client;

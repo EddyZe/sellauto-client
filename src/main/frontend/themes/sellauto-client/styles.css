@@ -1,13 +1,20 @@
 @import url('./main-layout.css');
 
-.custom-card {
+h3 {
+    margin: 5px;
+    padding-bottom: 10px;
+    text-align: center;
+    border-bottom: #b2c1ca 1px solid;
+}
+
+.custom-card, .custom-block {
     background-color: #ffffff;
     border-radius: 12px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1),
     0 2px 4px rgba(0, 0, 0, 0.06);
     padding: 1.5rem;
     transition: all 0.3s ease;
-    margin: 0 auto;
+    margin: 5px auto 0;
     overflow: hidden;
     position: relative;
 }

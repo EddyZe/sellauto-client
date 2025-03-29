@@ -7,20 +7,14 @@ import com.vaadin.flow.component.html.Footer;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Header;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.icon.SvgIcon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.sidenav.SideNav;
 import com.vaadin.flow.component.sidenav.SideNavItem;
 import com.vaadin.flow.router.Layout;
-import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.server.menu.MenuConfiguration;
-import com.vaadin.flow.server.menu.MenuEntry;
 import com.vaadin.flow.theme.lumo.LumoUtility;
-import org.vaadin.lineawesome.LineAwesomeIconUrl;
-
-import java.util.List;
 
 /**
  * The main view is a top-level placeholder for other views.
@@ -73,7 +67,12 @@ public class MainLayout extends AppLayout {
 //        });
         var currentLogin = sellAutoRestClient.getCurrentLogin();
 
+        nav.addItem(new SideNavItem("Объявления", "ads",
+                VaadinIcon.LIST.create()));
+
         if (currentLogin != null) {
+            nav.addItem(new SideNavItem("Создать объявление", "ads/create",
+                    VaadinIcon.PLUS.create()));
             nav.addItem(new SideNavItem("Профиль", "profile",
                     VaadinIcon.USER.create()));
             nav.addItem(new SideNavItem("Чаты", "",
@@ -83,9 +82,9 @@ public class MainLayout extends AppLayout {
                     VaadinIcon.SIGN_IN.create()));
         }
 
-        nav.addItem(new SideNavItem("Все истории", "histories", VaadinIcon.ARCHIVE.create()));
-        nav.addItem(new SideNavItem("История платежей", "payments", VaadinIcon.MONEY_DEPOSIT.create()));
-        nav.addItem(new SideNavItem("Истории ждут выплаты", "approvedHistories", VaadinIcon.BOOK.create()));
+//        nav.addItem(new SideNavItem("Все истории", "histories", VaadinIcon.ARCHIVE.create()));
+//        nav.addItem(new SideNavItem("История платежей", "payments", VaadinIcon.MONEY_DEPOSIT.create()));
+//        nav.addItem(new SideNavItem("Истории ждут выплаты", "approvedHistories", VaadinIcon.BOOK.create()));
 
         return nav;
     }

@@ -18,6 +18,8 @@ public class Ad extends VerticalLayout implements HasUrlParameter<String> {
 
     public Ad(SellAutoRestClient sellAutoRestClient) {
         this.sellAutoRestClient = sellAutoRestClient;
+        setSizeFull();
+        setClassName("custom-card");
     }
 
 
@@ -25,6 +27,7 @@ public class Ad extends VerticalLayout implements HasUrlParameter<String> {
     public void setParameter(BeforeEvent beforeEvent, String param) {
         try {
             long id =  Long.parseLong(param);
+            var ad = sellAutoRestClient.getAdId(id);
 
 
 
@@ -33,4 +36,5 @@ public class Ad extends VerticalLayout implements HasUrlParameter<String> {
             Notification.show("Произошла ошибка...", 5000, Notification.Position.TOP_CENTER);
         }
     }
+
 }
