@@ -25,7 +25,10 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MultiFileMemoryBuffer;
+import com.vaadin.flow.data.binder.BeanValidationBinder;
+import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
+import com.vaadin.flow.data.validator.StringLengthValidator;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +40,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 @PageTitle("Создание объявления")
@@ -47,7 +51,9 @@ public class CreateAdView extends VerticalLayout {
     private final SellAutoRestClient sellAutoRestClient;
     private final String downloadDir;
 
-    public CreateAdView(SellAutoRestClient sellAutoRestClient,@Value("${sell-auto.data.files}") String downloadDir) {
+    private final Binder<CreateNewAdPayload> binder = new BeanValidationBinder<>(CreateNewAdPayload.class);
+
+    public CreateAdView(SellAutoRestClient sellAutoRestClient, @Value("${sell-auto.data.files}") String downloadDir) {
         this.sellAutoRestClient = sellAutoRestClient;
         this.downloadDir = downloadDir;
         setDefaultHorizontalComponentAlignment(Alignment.CENTER);
@@ -63,17 +69,23 @@ public class CreateAdView extends VerticalLayout {
 
     private void init() {
         var title = new TextField("Название объявления");
+        title.setRequired(true);
         title.setWidthFull();
         var description = new TextArea("Описание");
+        description.setRequired(true);
         description.setWidthFull();
         var price = new NumberField("Цена");
+        price.setRequired(true);
         price.setWidthFull();
         var year = new NumberField("Год выпуска");
+        year.setRequired(true);
         year.setWidthFull();
         var vin = new TextField("VIN");
+        vin.setRequired(true);
         vin.setWidthFull();
         var mileage = new NumberField("Пробег");
         mileage.setWidthFull();
+        mileage.setRequired(true);
         var engine = new Select<EngineType>();
         engine.setWidthFull();
         engine.setLabel("Тип двигателя");
@@ -153,26 +165,32 @@ public class CreateAdView extends VerticalLayout {
             if (colors.getValue() == null || model.getValue() == null || brand.getValue() == null ||
                 driveMode.getValue() == null || body.getValue() == null || transmission.getValue() == null ||
                 engine.getValue() == null) {
-                Notification.show("Выберите все параметры авто. (Привод, тип коробки передач и т.д.)");
+                Notification.show("Выберите все параметры авто. (Привод, тип коробки передач и т.д.)", 5000, Notification.Position.TOP_CENTER);
+                return;
             }
 
-            var newAd = CreateNewAdPayload.builder()
-                    .title(title.getValue())
-                    .description(description.getValue())
-                    .price(price.getValue())
-                    .year(year.getValue().intValue())
-                    .vin(vin.getValue())
-                    .mileage(mileage.getValue().intValue())
-                    .engineType(engine.getValue())
-                    .transmissionType(transmission.getValue())
-                    .bodyType(body.getValue())
-                    .drive(driveMode.getValue())
-                    .brandTitle(brand.getValue().getTitle())
-                    .modelTitle(model.getValue().getTitle())
-                    .colorTitle(colors.getValue().getTitle())
-                    .build();
+            if (buffer.getFiles().isEmpty()) {
+                Notification.show("Загрузите фото.", 5000, Notification.Position.TOP_CENTER);
+                return;
+            }
 
             try {
+                var newAd = CreateNewAdPayload.builder()
+                        .title(title.getValue())
+                        .description(description.getValue())
+                        .price(price.getValue())
+                        .year(year.getValue().intValue())
+                        .vin(vin.getValue())
+                        .mileage(mileage.getValue().intValue())
+                        .engineType(engine.getValue())
+                        .transmissionType(transmission.getValue())
+                        .bodyType(body.getValue())
+                        .drive(driveMode.getValue())
+                        .brandTitle(brand.getValue().getTitle())
+                        .modelTitle(model.getValue().getTitle())
+                        .colorTitle(colors.getValue().getTitle())
+                        .build();
+
                 var resp = sellAutoRestClient.createAd(newAd, new ArrayList<>(buffer.getFiles()
                         .stream()
                         .map(f -> {
@@ -191,10 +209,48 @@ public class CreateAdView extends VerticalLayout {
                 UI.getCurrent().navigate("/ads/%d".formatted(resp.getAdId()));
             } catch (Exception ex) {
                 log.error(ex.getMessage(), ex);
-                Notification.show("Ошибка создания объявления");
+                Notification.show("Ошибка создания объявления... Заполните все поля.", 5000, Notification.Position.TOP_CENTER);
             }
         });
 
+
+        binder.forField(price)
+                .withValidator(
+                        p -> p != null && p > 1, "Цена должна быть больше чем 1"
+                )
+                .bind(CreateNewAdPayload::getPrice, CreateNewAdPayload::setPrice);
+
+        binder.forField(title)
+                .withValidator(
+                        new StringLengthValidator("Наименование не должно быть пустым", 1, 250)
+                )
+                .bind(CreateNewAdPayload::getTitle, CreateNewAdPayload::setTitle);
+
+        binder.forField(description)
+                .withValidator(
+                        new StringLengthValidator("Описание должно быть не менее 5 символов", 5, 4096)
+                )
+                .bind(CreateNewAdPayload::getDescription, CreateNewAdPayload::setDescription);
+
+        binder.forField(year)
+                .withValidator(
+                        y -> y != null && y > 1900. && LocalDateTime.now().getYear() >= y,
+                        "Год должен быть больше чем 1900 и меньше чем текущий..."
+                )
+                .bind(CreateNewAdPayload::getPrice, CreateNewAdPayload::setPrice);
+
+        binder.forField(vin)
+                .withValidator(
+                        new StringLengthValidator("VIN не может быть пустым и больше 50 символов", 1, 50)
+                )
+                .bind(CreateNewAdPayload::getVin, CreateNewAdPayload::setVin);
+
+
+        binder.forField(mileage)
+                .withValidator(
+                        m -> m != null && m > 1, "Пробег должен быть больше чем 1..."
+                )
+                .bind(CreateNewAdPayload::getPrice, CreateNewAdPayload::setPrice);
 
         add(title, description, price, year, vin, mileage, engine, transmission, body, driveMode, brand, model, colors, upload, btn);
     }

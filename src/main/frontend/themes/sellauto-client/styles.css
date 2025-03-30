@@ -7,6 +7,10 @@ h3 {
     border-bottom: #b2c1ca 1px solid;
 }
 
+a {
+    font-size: 18px;
+}
+
 .custom-card, .custom-block {
     background-color: #ffffff;
     border-radius: 12px;
@@ -23,4 +27,28 @@ h3 {
     transform: translateY(-2px);
     box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15),
     0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.ad-sold {
+    border: 1px solid red;
+    background-color: #f8d7da;
+    color: red;
+    padding: 5px;
+    font-size: 12px;
+    text-align: center;
+    vertical-align: center;
+    align-items: center;
+    border-radius: 5px;
+}
+
+.ad-for-sale {
+    border: 1px solid green;
+    background-color: #d4edda;
+    color: green;
+    padding: 5px;
+    font-size: 12px;
+    vertical-align: center;
+    text-align: center;
+    align-items: center;
+    border-radius: 5px;
 }

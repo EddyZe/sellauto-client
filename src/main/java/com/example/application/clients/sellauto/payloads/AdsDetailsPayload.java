@@ -12,7 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @Data
-public class UserAdsDetailsPayload {
+public class AdsDetailsPayload {
 
     private List<AdPayload> ads;
 }

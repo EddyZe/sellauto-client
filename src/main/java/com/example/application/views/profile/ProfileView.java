@@ -8,6 +8,7 @@ import com.example.application.enums.Role;
 import com.example.application.exceptions.SellAutoApiException;
 import com.example.application.views.MainLayout;
 import com.example.application.views.adminpanel.MainAdminView;
+import com.example.application.views.ads.UserAdsView;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -96,8 +97,9 @@ public class ProfileView extends VerticalLayout {
 
             var userIds = new Span("Ваш ID: %d".formatted(profile.getUserId()));
             var adsSize = new Span("Опубликовано объявлений: %d".formatted(profile.getAds().size()));
+            var routeLink = new RouterLink("Список моих объявлений", UserAdsView.class);
 
-            infoLayout.add(userIds, adsSize);
+            infoLayout.add(userIds, adsSize, routeLink);
             editLayout.add(infoLayout);
 
             add(headerLayout, editLayout);

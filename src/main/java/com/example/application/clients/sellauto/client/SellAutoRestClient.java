@@ -26,6 +26,7 @@ import org.springframework.web.client.RestClient;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 
@@ -34,7 +35,6 @@ import java.util.function.Supplier;
 public class SellAutoRestClient {
 
     private final RestClient restClient;
-    private final ObjectMapper objectMapper;
 
 
     private final static String LOGIN_URL = "/api/v1/auth/login";
@@ -48,8 +48,7 @@ public class SellAutoRestClient {
     private final static String ADMIN_URL = "/api/v1/admin";
 
 
-    public SellAutoRestClient(@Value("${sell-auto.base-url}") String baseUrl, ObjectMapper objectMapper, ObjectMapper objectMapper1) {
-        this.objectMapper = objectMapper1;
+    public SellAutoRestClient(@Value("${sell-auto.base-url}") String baseUrl, ObjectMapper objectMapper) {
         this.restClient = RestClient.builder()
                 .baseUrl(baseUrl)
                 .messageConverters(converts -> {
@@ -82,13 +81,49 @@ public class SellAutoRestClient {
         }
     }
 
-//    private AdsPayload getAds() {
-//        try {
-//
-//        } catch (Exception e) {
-//            throw new SellAutoApiException("Ошибка получения списка объявлений!");
-//        }
-//    }
+    public AdsDetailsPayload getAds() {
+        try {
+            return restClient.get()
+                    .uri(ADS_LIST_URL)
+                    .retrieve()
+                    .body(AdsDetailsPayload.class);
+        } catch (Exception e) {
+            throw new SellAutoApiException(e.getMessage());
+        }
+    }
+
+    public void editAd(EditAdPayload editAd, Long id) {
+        try {
+            executeWithTokenRefresh(() ->
+                    restClient.patch()
+                            .uri(ADS_LIST_URL + "/" + id)
+                            .body(editAd)
+                            .retrieve()
+                            .toBodilessEntity());
+        } catch (Exception e) {
+            throw new SellAutoApiException(e.getMessage());
+        }
+    }
+
+    public AdsDetailsPayload getAds(Map<String, String> params) {
+        var sb = new StringBuilder();
+        params.forEach((k, v) -> sb.append("&")
+                .append(k)
+                .append("=")
+                .append(v));
+        try {
+            if (sb.length() <= 1) {
+                return getAds();
+            }
+
+            return restClient.get()
+                    .uri(ADS_LIST_URL + "?" + sb.substring(1))
+                    .retrieve()
+                    .body(AdsDetailsPayload.class);
+        } catch (Exception e) {
+            throw new SellAutoApiException(e.getMessage());
+        }
+    }
 
     public Resource getPhoto(Long photoId) {
         try {
@@ -97,6 +132,18 @@ public class SellAutoRestClient {
                     .headers(httpHeaders -> httpHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM))
                     .retrieve()
                     .body(Resource.class);
+        } catch (Exception e) {
+            throw new SellAutoApiException(e.getMessage());
+        }
+    }
+
+    public void deleteAd(Long id) {
+        try {
+            executeWithTokenRefresh(() ->
+                    restClient.delete()
+                            .uri(ADS_LIST_URL + "/" + id)
+                            .retrieve()
+                            .toBodilessEntity());
         } catch (Exception e) {
             throw new SellAutoApiException(e.getMessage());
         }
@@ -292,12 +339,12 @@ public class SellAutoRestClient {
         }
     }
 
-    public UserAdsDetailsPayload getUserAdsDetails(Long userId) {
+    public AdsDetailsPayload getUserAdsDetails(Long userId) {
         try {
             return restClient.get()
                     .uri(ADS_LIST_URL + "/user/" + userId)
                     .retrieve()
-                    .body(UserAdsDetailsPayload.class);
+                    .body(AdsDetailsPayload.class);
         } catch (Exception e) {
             throw new SellAutoApiException(e.getMessage());
         }

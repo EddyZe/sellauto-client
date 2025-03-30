@@ -3,30 +3,25 @@ package com.example.application.views.profile;
 
 import com.example.application.clients.sellauto.client.SellAutoRestClient;
 import com.example.application.clients.sellauto.payloads.AdPayload;
-import com.example.application.clients.sellauto.payloads.PhotoBasePayload;
 import com.example.application.clients.sellauto.payloads.ProfilePayload;
 import com.example.application.enums.Role;
 import com.example.application.exceptions.SellAutoApiException;
 import com.example.application.views.MainLayout;
-import com.example.application.views.ads.Ad;
+import com.example.application.views.util.ComponentRenders;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.H3;
-import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.virtuallist.VirtualList;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
-import com.vaadin.flow.router.*;
-import com.vaadin.flow.server.InputStreamFactory;
-import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.router.BeforeEvent;
+import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.Route;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.io.Resource;
-
-import java.io.IOException;
-import java.util.Objects;
 
 
 @Route(value = "user", layout = MainLayout.class)
@@ -47,11 +42,7 @@ public class UserProfileView extends HorizontalLayout implements HasUrlParameter
         infoLayout = new VerticalLayout();
         adsLayout = new VerticalLayout();
         infoLayout.setClassName("custom-block");
-        infoLayout.setSizeFull();
-
         adsLayout.setClassName("custom-block");
-        adsLayout.setWidthFull();
-        adsLayout.setHeight("100%");
     }
 
     @Override
@@ -69,9 +60,9 @@ public class UserProfileView extends HorizontalLayout implements HasUrlParameter
         var countAds = new Span("Объявлений создано:  %d".formatted(user.getAds().size()));
         infoLayout.add(title, firstName, lastName, numberPhone, email, countAds);
         infoLayout.setClassName("custom-block");
-        infoLayout.setWidthFull();
+        infoLayout.setWidth("40%");
         UI.getCurrent().getPage().setTitle(user.getFirstName());
-        var titleAds = new H3("Объявления пользователя");
+        var titleAds = new H3("Объявления");
         titleAds.setWidthFull();
         adsLayout.add(titleAds);
 
@@ -84,50 +75,38 @@ public class UserProfileView extends HorizontalLayout implements HasUrlParameter
         userAds.setWidth("95%");
         userAds.setItems(sellAutoRestClient.getUserAdsDetails(user.getUserId()).getAds());
         if (!user.getAds().isEmpty()) {
-            userAds.setRenderer(new ComponentRenderer<>(ad -> {
-                var mainLay = new HorizontalLayout();
-                var link = new RouterLink("%s %s рублей".formatted(ad.getTitle(), ad.getPrices().getLast().getPrice()), Ad.class,
-                        ad.getAdId().toString());
-
-                if (ad.getCar() != null && !ad.getCar().getPhotos().isEmpty()) {
-                    var firstPhoto = ad.getCar().getPhotos().getFirst();
-                    var resourse = sellAutoRestClient.getPhoto(firstPhoto.getPhotoId());
-                    var photo = createImage(resourse, firstPhoto);
-                    mainLay.setClassName("custom-card");
-                    mainLay.add(photo);
-                }
-
-                var car = ad.getCar();
-                var carName = new Span("%s %s %s. Пробег: %d км".formatted(Objects.requireNonNull(car).getBrand().getTitle(),
-                        car.getModel().getTitle(),
-                        car.getTransmissionType().toString(),
-                        car.getMileage()));
-                var vin = new Span("Vin: " + car.getVin());
-
-
-                mainLay.add(new VerticalLayout(link, carName, vin));
-                return mainLay;
-            }));
+            userAds.setRenderer(generateAdRender(currentUser, userAds, user));
             adsLayout.add(userAds);
         }
 
         add(infoLayout, adsLayout);
     }
 
-    private Image createImage(Resource resourse, PhotoBasePayload firstPhoto) {
-        var photo = new Image(new StreamResource(resourse.getFilename() == null ?
-                "image" + firstPhoto.getPhotoId() : resourse.getFilename(),
-                (InputStreamFactory) () -> {
+    private ComponentRenderer<VerticalLayout, AdPayload> generateAdRender(ProfilePayload currentUser, VirtualList<AdPayload> userAds, ProfilePayload user) {
+        return new ComponentRenderer<>(ad -> {
+            var add = ComponentRenders.generateComponentAdList(ad,
+                    sellAutoRestClient.getPhoto(
+                            ad.getCar().getPhotos().getFirst().getPhotoId()
+                    ),
+                    "250px", "150px");
+
+            if (currentUser.getAccount().getRole() == Role.ROLE_ADMIN) {
+                var deleteAdButton = new Button("Удалить", e -> {
                     try {
-                        return resourse.getInputStream();
-                    } catch (IOException e) {
-                        log.error("error get ingupStream from resourses", e);
-                        return null;
+                        sellAutoRestClient.deleteAd(ad.getAdId());
+                        Notification.show("Объявление удалено", 5000, Notification.Position.TOP_CENTER);
+                        userAds.setItems(sellAutoRestClient.getUserAdsDetails(user.getUserId()).getAds());
+                    } catch (SellAutoApiException ex) {
+                        log.error("error delete ad", ex);
+                        Notification.show("Ошибка при удалении объявлении", 5000, Notification.Position.TOP_CENTER);
                     }
-                }), "photo car");
-        photo.setMaxWidth("250px");
-        photo.setHeight("180px");
-        return photo;
+                });
+
+                add.add(deleteAdButton);
+            }
+            return add;
+        }
+        );
     }
 
     private Button createBlocedUserButton(ProfilePayload user) {
