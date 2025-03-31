@@ -4,12 +4,16 @@ package com.example.application.views.ads;
 import com.example.application.clients.sellauto.client.SellAutoRestClient;
 import com.example.application.clients.sellauto.payloads.AdPayload;
 import com.example.application.clients.sellauto.payloads.PhotoBasePayload;
+import com.example.application.clients.sellauto.payloads.PriceBasePayload;
+import com.example.application.enums.Role;
+import com.example.application.exceptions.SellAutoApiException;
+import com.example.application.views.MainLayout;
 import com.example.application.views.util.ComponentRenders;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.html.H3;
-import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -21,7 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 
 
 @Slf4j
-@Route("/ads")
+@Route(value = "/ads", layout = MainLayout.class)
 public class Ad extends VerticalLayout implements HasUrlParameter<String> {
 
     private final SellAutoRestClient sellAutoRestClient;
@@ -29,9 +33,6 @@ public class Ad extends VerticalLayout implements HasUrlParameter<String> {
     public Ad(SellAutoRestClient sellAutoRestClient) {
         this.sellAutoRestClient = sellAutoRestClient;
         setWidthFull();
-        setAlignItems(Alignment.CENTER);
-        setDefaultHorizontalComponentAlignment(Alignment.CENTER);
-        setHorizontalComponentAlignment(Alignment.CENTER);
     }
 
 
@@ -39,23 +40,114 @@ public class Ad extends VerticalLayout implements HasUrlParameter<String> {
     public void setParameter(BeforeEvent beforeEvent, String param) {
         try {
             var adLay = new VerticalLayout();
-            adLay.setWidth("80%");
+            adLay.setWidthFull();
             adLay.setClassName("custom-block");
-            adLay.setDefaultHorizontalComponentAlignment(Alignment.CENTER);
 
-            var id =  Long.parseLong(param);
+            var id = Long.parseLong(param);
             var ad = sellAutoRestClient.getAdId(id);
 
-            var title = new H3(ad.getTitle());
-            title.setWidth("60%");
+            var car = ad.getCar();
 
-            adLay.add(title, generatePhotoLayout(ad));
+            var title = new H3("%s %s, %s  (%.2f ₽)".formatted(
+                    car.getBrand().getTitle(),
+                    car.getModel().getTitle(),
+                    car.getYear(),
+                    ad.getPrices().getLast().getPrice())
+            );
+            title.setWidthFull();
+
+            var carInfo = new VerticalLayout();
+            var images = generatePhotoLayout(ad);
+            carInfo.setWidth("20%");
+            var horizontalLayout = new HorizontalLayout(carInfo, images);
+            horizontalLayout.setWidthFull();
+
+
+            carInfo.add(new Span("Пробег: %d км".formatted(car.getMileage())));
+            carInfo.add(new Span("Бренд: %s".formatted(car.getBrand().getTitle())));
+            carInfo.add(new Span("Модель: %s".formatted(car.getModel().getTitle())));
+            carInfo.add(new Span("Год: %s".formatted(car.getYear())));
+            carInfo.add(new Span("Кузов: %s".formatted(car.getBodyType().toString())));
+            carInfo.add(new Span("Привод: %s".formatted(car.getDrive().toString())));
+            carInfo.add(new Span("Коробка: %s".formatted(car.getTransmissionType().toString())));
+            carInfo.add(new Span("VIN: %s".formatted(car.getVin())));
+
+            var commentAndSendMessageLay = createCommentAndSendMessageLayout(ad);
+
+            var chart = new ChartView(ad.getPrices()
+                    .stream()
+                    .map(PriceBasePayload::getPrice)
+                    .toList());
+            var chartLay = new VerticalLayout(chart);
+            chartLay.setWidthFull();
+            chartLay.setDefaultHorizontalComponentAlignment(Alignment.CENTER);
+
+            var comment = new Div(ad.getDescription());
+            comment.setSizeFull();
+
+            adLay.add(title,
+                    horizontalLayout,
+                    new H4("График изменения цен. Текущая цена: %.2f ₽".formatted(ad.getPrices().getFirst().getPrice())),
+                    chartLay,
+                    new H4("Комментарий от продавца"),
+                    comment);
+
+            try {
+                var currentUser = sellAutoRestClient.getProfile();
+                if (currentUser.getUserId().equals(ad.getUser().getUserId()) || currentUser.getAccount().getRole() == Role.ROLE_ADMIN) {
+                    var editButton = new Button("Редактировать", e ->
+                            UI.getCurrent().navigate("/ads/edit/" + ad.getAdId()));
+                    var deleteButton = createDeleteButton(ad);
+
+                    var buttonLay = new HorizontalLayout(editButton, deleteButton);
+
+                    if (currentUser.getAccount().getRole() == Role.ROLE_ADMIN) {
+                        adLay.add(commentAndSendMessageLay);
+                    }
+                    adLay.add(buttonLay);
+                } else
+                    adLay.add(commentAndSendMessageLay);
+
+            } catch (Exception ignored) {
+            }
 
             add(adLay);
         } catch (NumberFormatException e) {
             log.error("Error: {}", e.getMessage());
             Notification.show("Произошла ошибка...", 5000, Notification.Position.TOP_CENTER);
         }
+    }
+
+    private Button createDeleteButton(AdPayload ad) {
+        return new Button("Удалить", e -> {
+            try {
+                sellAutoRestClient.deleteAd(ad.getAdId());
+                UI.getCurrent().navigate(UserAdsView.class);
+                Notification.show("Объявление удалено", 5000, Notification.Position.TOP_CENTER);
+            } catch (SellAutoApiException exe) {
+                log.error("error delete ad", exe);
+                Notification.show("Ошибка удаления", 5000, Notification.Position.TOP_CENTER);
+            }
+        });
+    }
+
+    private VerticalLayout createCommentAndSendMessageLayout(AdPayload ad) {
+        return new VerticalLayout(
+                new Button("Написать продавцу", e -> {
+                    try {
+                        var currentUser = sellAutoRestClient.getProfile();
+                        if (ad.getUser().getUserId().equals(currentUser.getUserId())) {
+                            Notification.show("Вы не можете написать самому себе.", 5000, Notification.Position.TOP_CENTER);
+                            return;
+                        }
+
+                        var chat = sellAutoRestClient.openChat(ad.getAdId());
+                        UI.getCurrent().navigate("chat/" + chat.getChatId());
+                    } catch (Exception ex) {
+                        log.error("error creating chat", ex);
+                        Notification.show("Что-то пошло не так.... Попробуйте повторить позже", 5000, Notification.Position.TOP_CENTER);
+                    }
+                }));
     }
 
     private VerticalLayout generatePhotoLayout(AdPayload ad) {

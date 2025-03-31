@@ -7,6 +7,7 @@ import com.example.application.clients.sellauto.payloads.EditAdPayload;
 import com.example.application.exceptions.SellAutoApiException;
 import com.example.application.views.MainLayout;
 import com.example.application.views.util.ComponentRenders;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -34,7 +35,9 @@ public class UserAdsView extends VerticalLayout {
             var ads = new VirtualList<AdPayload>();
             ads.setHeightFull();
             ads.setWidth("70%");
-            ads.setItems(this.sellAutoRestClient.getUserAdsDetails(profile.getUserId()).getAds());
+            var userAds = this.sellAutoRestClient.getUserAdsDetails(profile.getUserId()).getAds();
+            ads.setItems(userAds);
+
             ads.setRenderer(
                     new ComponentRenderer<>(ad -> {
                         var photoId = ad.getCar().getPhotos().getFirst().getPhotoId();
@@ -53,6 +56,9 @@ public class UserAdsView extends VerticalLayout {
                             }
                         });
 
+                        var edit = new Button("Редактировать", e ->
+                                UI.getCurrent().navigate("/ads/edit/" + ad.getAdId()));
+
                         editStatus.addClickListener(e -> {
                             try {
                                 sellAutoRestClient.editAd(EditAdPayload.builder()
@@ -66,7 +72,7 @@ public class UserAdsView extends VerticalLayout {
                             }
                         });
 
-                        adLay.add(new HorizontalLayout(editStatus, delete));
+                        adLay.add(new HorizontalLayout(editStatus, edit, delete));
                         return adLay;
                     })
             );

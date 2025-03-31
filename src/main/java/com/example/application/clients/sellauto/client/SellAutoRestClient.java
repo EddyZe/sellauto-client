@@ -2,13 +2,13 @@ package com.example.application.clients.sellauto.client;
 
 
 import com.example.application.clients.sellauto.payloads.*;
+import com.example.application.exceptions.ForbiddenException;
 import com.example.application.exceptions.SellAutoApiException;
 import com.example.application.exceptions.UnauthorizedException;
 import com.example.application.handlers.GlobalErrorHandler;
 import com.example.application.views.auth.LoginView;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.server.VaadinSession;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,6 +44,7 @@ public class SellAutoRestClient {
     private final static String ADS_LIST_URL = "/api/v1/ads";
     private final static String BRANDS_URL = "/api/v1/brands";
     private final static String COLORS_URL = "/api/v1/colors";
+    private final static String CHATS_URL = "/api/v1/chats";
 
     private final static String ADMIN_URL = "/api/v1/admin";
 
@@ -144,6 +145,18 @@ public class SellAutoRestClient {
                             .uri(ADS_LIST_URL + "/" + id)
                             .retrieve()
                             .toBodilessEntity());
+        } catch (Exception e) {
+            throw new SellAutoApiException(e.getMessage());
+        }
+    }
+
+    public ChatBasePayload openChat(Long chatId) {
+        try {
+            return executeWithTokenRefresh(() ->
+                    restClient.post()
+                            .uri(CHATS_URL + "/" + chatId)
+                            .retrieve()
+                            .body(ChatBasePayload.class));
         } catch (Exception e) {
             throw new SellAutoApiException(e.getMessage());
         }
@@ -548,7 +561,7 @@ public class SellAutoRestClient {
 
         if (statusCode == HttpStatus.FORBIDDEN) {
             log.warn("Received 403 Forbidden response");
-            Notification.show("Ошибка доступа.", 5000, Notification.Position.TOP_CENTER);
+            throw new ForbiddenException("Forbidden");
         }
 
         if (statusCode.is5xxServerError()) {

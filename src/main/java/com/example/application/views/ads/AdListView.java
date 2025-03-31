@@ -35,7 +35,7 @@ import java.util.Map;
 
 @Slf4j
 @PageTitle("Объявления")
-@Route(value = "/ads", layout = MainLayout.class)
+@Route(value = "", layout = MainLayout.class)
 @Menu(order = 0, icon = LineAwesomeIconUrl.LIST_ALT)
 public class AdListView extends HorizontalLayout {
 

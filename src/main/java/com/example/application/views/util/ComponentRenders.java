@@ -26,6 +26,7 @@ public class ComponentRenders {
                 ad.getAdId().toString());
 
         var stats = new Span(ad.getIsActive() ? "Продается" : "Продано");
+        stats.setHeight("20px");
         if (!ad.getIsActive()) {
             stats.setClassName("ad-sold");
         } else {

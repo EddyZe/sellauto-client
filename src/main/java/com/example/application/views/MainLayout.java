@@ -1,6 +1,7 @@
 package com.example.application.views;
 
 import com.example.application.clients.sellauto.client.SellAutoRestClient;
+import com.example.application.views.ads.AdListView;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.html.Footer;
@@ -59,7 +60,7 @@ public class MainLayout extends AppLayout {
 
         var currentLogin = sellAutoRestClient.getCurrentLogin();
 
-        nav.addItem(new SideNavItem("Объявления", "ads",
+        nav.addItem(new SideNavItem("Объявления", AdListView.class,
                 VaadinIcon.LIST.create()));
 
         if (currentLogin != null) {
