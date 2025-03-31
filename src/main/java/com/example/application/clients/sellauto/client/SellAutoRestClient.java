@@ -13,6 +13,7 @@ import com.vaadin.flow.server.VaadinSession;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -82,6 +83,14 @@ public class SellAutoRestClient {
         }
     }
 
+    public ChatsBasePayload getMyChats() {
+        return executeWithTokenRefresh(() ->
+                restClient.get()
+                        .uri(CHATS_URL + "/my")
+                        .retrieve()
+                        .body(ChatsBasePayload.class));
+    }
+
     public AdsDetailsPayload getAds() {
         try {
             return restClient.get()
@@ -94,16 +103,12 @@ public class SellAutoRestClient {
     }
 
     public void editAd(EditAdPayload editAd, Long id) {
-        try {
-            executeWithTokenRefresh(() ->
-                    restClient.patch()
-                            .uri(ADS_LIST_URL + "/" + id)
-                            .body(editAd)
-                            .retrieve()
-                            .toBodilessEntity());
-        } catch (Exception e) {
-            throw new SellAutoApiException(e.getMessage());
-        }
+        executeWithTokenRefresh(() ->
+                restClient.patch()
+                        .uri(ADS_LIST_URL + "/" + id)
+                        .body(editAd)
+                        .retrieve()
+                        .toBodilessEntity());
     }
 
     public AdsDetailsPayload getAds(Map<String, String> params) {
@@ -139,68 +144,48 @@ public class SellAutoRestClient {
     }
 
     public void deleteAd(Long id) {
-        try {
-            executeWithTokenRefresh(() ->
-                    restClient.delete()
-                            .uri(ADS_LIST_URL + "/" + id)
-                            .retrieve()
-                            .toBodilessEntity());
-        } catch (Exception e) {
-            throw new SellAutoApiException(e.getMessage());
-        }
+        executeWithTokenRefresh(() ->
+                restClient.delete()
+                        .uri(ADS_LIST_URL + "/" + id)
+                        .retrieve()
+                        .toBodilessEntity());
     }
 
     public ChatBasePayload openChat(Long chatId) {
-        try {
-            return executeWithTokenRefresh(() ->
-                    restClient.post()
-                            .uri(CHATS_URL + "/" + chatId)
-                            .retrieve()
-                            .body(ChatBasePayload.class));
-        } catch (Exception e) {
-            throw new SellAutoApiException(e.getMessage());
-        }
+        return executeWithTokenRefresh(() ->
+                restClient.post()
+                        .uri(CHATS_URL + "/" + chatId)
+                        .retrieve()
+                        .body(ChatBasePayload.class));
     }
 
     public Resource downloadBackup() {
-        try {
-            return executeWithTokenRefresh(() ->
-                    restClient.get()
-                            .uri(ADMIN_URL + "/backup/download")
-                            .retrieve()
-                            .body(Resource.class));
-        } catch (Exception e) {
-            throw new SellAutoApiException(e.getMessage());
-        }
+        return executeWithTokenRefresh(() ->
+                restClient.get()
+                        .uri(ADMIN_URL + "/backup/download")
+                        .retrieve()
+                        .body(Resource.class));
     }
 
     public void uploadBackup(Resource resource) {
-        try {
-            var mbb = new MultipartBodyBuilder();
-            mbb.part("file", resource, MediaType.APPLICATION_OCTET_STREAM);
+        var mbb = new MultipartBodyBuilder();
+        mbb.part("file", resource, MediaType.APPLICATION_OCTET_STREAM);
 
-            executeWithTokenRefresh(() ->
-                    restClient.post()
-                            .uri(ADMIN_URL + "/backup/upload")
-                            .contentType(MediaType.MULTIPART_FORM_DATA)
-                            .body(mbb.build())
-                            .retrieve()
-                            .toBodilessEntity());
-        } catch (Exception e) {
-            throw new SellAutoApiException(e.getMessage());
-        }
+        executeWithTokenRefresh(() ->
+                restClient.post()
+                        .uri(ADMIN_URL + "/backup/upload")
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                        .body(mbb.build())
+                        .retrieve()
+                        .toBodilessEntity());
     }
 
     public ColorsPayload getAdminColors() {
-        try {
-            return executeWithTokenRefresh(() ->
-                    restClient.get()
-                            .uri(ADMIN_URL + "/colors")
-                            .retrieve()
-                            .body(ColorsPayload.class));
-        } catch (Exception e) {
-            throw new SellAutoApiException(e.getMessage());
-        }
+        return executeWithTokenRefresh(() ->
+                restClient.get()
+                        .uri(ADMIN_URL + "/colors")
+                        .retrieve()
+                        .body(ColorsPayload.class));
     }
 
     public ColorsPayload getColors() {
@@ -227,41 +212,29 @@ public class SellAutoRestClient {
     }
 
     public void createColor(ColorBasePayload color) {
-        try {
-            executeWithTokenRefresh(() ->
-                    restClient.post()
-                            .uri(ADMIN_URL + "/colors")
-                            .body(color)
-                            .retrieve()
-                            .toBodilessEntity());
-        } catch (Exception e) {
-            throw new SellAutoApiException(e.getMessage());
-        }
+        executeWithTokenRefresh(() ->
+                restClient.post()
+                        .uri(ADMIN_URL + "/colors")
+                        .body(color)
+                        .retrieve()
+                        .toBodilessEntity());
     }
 
     public void deleteColor(Integer colorId) {
-        try {
-            executeWithTokenRefresh(() ->
-                    restClient.delete()
-                            .uri(ADMIN_URL + "/colors/" + colorId)
-                            .retrieve()
-                            .toBodilessEntity());
-        } catch (Exception e) {
-            throw new SellAutoApiException(e.getMessage());
-        }
+        executeWithTokenRefresh(() ->
+                restClient.delete()
+                        .uri(ADMIN_URL + "/colors/" + colorId)
+                        .retrieve()
+                        .toBodilessEntity());
     }
 
     public BrandsPayload getAdminBrands() {
-        try {
-            return executeWithTokenRefresh(() ->
-                    restClient.get()
-                            .uri(ADMIN_URL + "/brands")
-                            .retrieve()
-                            .body(BrandsPayload.class)
-            );
-        } catch (Exception e) {
-            throw new SellAutoApiException(e.getMessage());
-        }
+        return executeWithTokenRefresh(() ->
+                restClient.get()
+                        .uri(ADMIN_URL + "/brands")
+                        .retrieve()
+                        .body(BrandsPayload.class)
+        );
     }
 
     public BrandsPayload getBrands() {
@@ -278,78 +251,53 @@ public class SellAutoRestClient {
     }
 
     public void deleteModel(Integer modelId) {
-        try {
-            executeWithTokenRefresh(() ->
-                    restClient.delete()
-                            .uri(ADMIN_URL + "/models/" + modelId)
-                            .retrieve()
-                            .toBodilessEntity());
-
-        } catch (Exception e) {
-            throw new SellAutoApiException(e.getMessage());
-        }
+        executeWithTokenRefresh(() ->
+                restClient.delete()
+                        .uri(ADMIN_URL + "/models/" + modelId)
+                        .retrieve()
+                        .toBodilessEntity());
     }
 
     public void createBrand(BrandBasePayload brandBasePayload) {
-        try {
-            executeWithTokenRefresh(() ->
-                    restClient.post()
-                            .uri(ADMIN_URL + "/brands")
-                            .body(brandBasePayload)
-                            .retrieve()
-                            .toBodilessEntity());
-        } catch (Exception e) {
-            throw new SellAutoApiException(e.getMessage());
-        }
+        executeWithTokenRefresh(() ->
+                restClient.post()
+                        .uri(ADMIN_URL + "/brands")
+                        .body(brandBasePayload)
+                        .retrieve()
+                        .toBodilessEntity());
     }
 
     public BrandDetailPayload getBrand(Integer brandId) {
-        try {
-            return executeWithTokenRefresh(() ->
-                    restClient.get()
-                            .uri(ADMIN_URL + "/brands/" + brandId)
-                            .retrieve()
-                            .body(BrandDetailPayload.class));
-        } catch (Exception e) {
-            throw new SellAutoApiException(e.getMessage());
-        }
+        return executeWithTokenRefresh(() ->
+                restClient.get()
+                        .uri(ADMIN_URL + "/brands/" + brandId)
+                        .retrieve()
+                        .body(BrandDetailPayload.class));
     }
 
     public void deleteBrand(Integer brandId) {
-        try {
-            executeWithTokenRefresh(() ->
-                    restClient.delete()
-                            .uri(ADMIN_URL + "/brands/" + brandId)
-                            .retrieve()
-                            .toBodilessEntity());
-        } catch (Exception e) {
-            throw new SellAutoApiException(e.getMessage());
-        }
+        executeWithTokenRefresh(() ->
+                restClient.delete()
+                        .uri(ADMIN_URL + "/brands/" + brandId)
+                        .retrieve()
+                        .toBodilessEntity());
     }
 
     public ModelsPayload getModelsFromBrandTitle(String brandTitle) {
-        try {
-            return executeWithTokenRefresh(() ->
-                    restClient.get()
-                            .uri(ADMIN_URL + "/brand/" + brandTitle + "/models")
-                            .retrieve()
-                            .body(ModelsPayload.class));
-        } catch (Exception e) {
-            throw new SellAutoApiException(e.getMessage());
-        }
+        return executeWithTokenRefresh(() ->
+                restClient.get()
+                        .uri(ADMIN_URL + "/brand/" + brandTitle + "/models")
+                        .retrieve()
+                        .body(ModelsPayload.class));
     }
 
     public void createModel(ModelBasePayload model, String brandTitle) {
-        try {
-            executeWithTokenRefresh(() ->
-                    restClient.post()
-                            .uri(ADMIN_URL + "/models/" + brandTitle)
-                            .body(model)
-                            .retrieve()
-                            .toBodilessEntity());
-        } catch (Exception e) {
-            throw new SellAutoApiException(e.getMessage());
-        }
+        executeWithTokenRefresh(() ->
+                restClient.post()
+                        .uri(ADMIN_URL + "/models/" + brandTitle)
+                        .body(model)
+                        .retrieve()
+                        .toBodilessEntity());
     }
 
     public AdsDetailsPayload getUserAdsDetails(Long userId) {
@@ -365,48 +313,35 @@ public class SellAutoRestClient {
 
 
     public AdPayload createAd(CreateNewAdPayload createNewAdPayload, List<Resource> photos) {
-        try {
-            var mbb = new MultipartBodyBuilder();
-            photos.forEach(photo -> mbb.part("files", photo));
-            mbb.part("ad", createNewAdPayload);
-            System.out.println("Request body: " + mbb.build());
-            return executeWithTokenRefresh(() -> restClient.post()
-                    .uri(ADS_LIST_URL + "/create")
-                    .contentType(MediaType.MULTIPART_FORM_DATA)
-                    .body(mbb.build())
-                    .retrieve()
-                    .body(AdPayload.class)
-            );
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            throw new SellAutoApiException(e.getMessage());
-        }
+        var mbb = new MultipartBodyBuilder();
+        photos.forEach(photo -> mbb.part("files", photo));
+        mbb.part("ad", createNewAdPayload);
+        System.out.println("Request body: " + mbb.build());
+        return executeWithTokenRefresh(() -> restClient.post()
+                .uri(ADS_LIST_URL + "/create")
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .body(mbb.build())
+                .retrieve()
+                .body(AdPayload.class)
+        );
     }
 
     public AdPayload getAdId(Long id) {
-        try {
-            return executeWithTokenRefresh(() ->
-                    restClient.get()
-                            .uri(ADS_LIST_URL + "/" + id)
-                            .retrieve()
-                            .body(AdPayload.class));
-        } catch (Exception e) {
-            throw new SellAutoApiException(e.getMessage());
-        }
+        return executeWithTokenRefresh(() ->
+                restClient.get()
+                        .uri(ADS_LIST_URL + "/" + id)
+                        .retrieve()
+                        .body(AdPayload.class));
     }
 
     public void editProfile(EditProfilePayload editProfile) {
-        try {
-            executeWithTokenRefresh(() ->
-                    restClient.patch()
-                            .uri(PROFILE_URL)
-                            .body(editProfile)
-                            .retrieve()
-                            .toBodilessEntity()
-            );
-        } catch (Exception e) {
-            throw new SellAutoApiException(e.getMessage());
-        }
+        executeWithTokenRefresh(() ->
+                restClient.patch()
+                        .uri(PROFILE_URL)
+                        .body(editProfile)
+                        .retrieve()
+                        .toBodilessEntity()
+        );
     }
 
 
@@ -432,9 +367,10 @@ public class SellAutoRestClient {
         }
 
         try {
+            var refreshToken = currentLogin.getRefreshToken();
             LoginResponse newResponse = restClient.post()
                     .uri(REFRESH_URL)
-                    .headers(headers -> headers.setBearerAuth(currentLogin.getRefreshToken()))
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + refreshToken)
                     .retrieve()
                     .body(LoginResponse.class);
 
@@ -452,77 +388,65 @@ public class SellAutoRestClient {
             try {
                 refreshToken();
                 return requestSupplier.get();
+            } catch (ForbiddenException e) {
+                throw new ForbiddenException(e.getMessage());
             } catch (Exception refreshEx) {
                 VaadinSession.getCurrent().close();
-                throw new UnauthorizedException("Session expired. Please relogin");
+                UI.getCurrent().navigate(LoginView.class);
+                return null;
             }
         }
     }
 
     public ProfilePayload getProfile() {
-        try {
-            return executeWithTokenRefresh(() ->
-                    restClient.get()
-                            .uri(PROFILE_URL + "/my")
-                            .retrieve()
-                            .body(ProfilePayload.class)
-            );
-        } catch (Exception e) {
-            throw new SellAutoApiException(e.getMessage());
-        }
+        return executeWithTokenRefresh(() ->
+                restClient.get()
+                        .uri(PROFILE_URL + "/my")
+                        .retrieve()
+                        .body(ProfilePayload.class)
+        );
     }
 
     public ProfilePayload getProfileById(Long id) {
-        try {
-            return executeWithTokenRefresh(() ->
-                    restClient.get()
-                            .uri(PROFILE_URL + "/" + id)
-                            .retrieve()
-                            .body(ProfilePayload.class));
-        } catch (Exception e) {
-            throw new SellAutoApiException(e.getMessage());
-        }
+        return executeWithTokenRefresh(() ->
+                restClient.get()
+                        .uri(PROFILE_URL + "/" + id)
+                        .retrieve()
+                        .body(ProfilePayload.class));
     }
 
     public ProfilesPayload getProfiles() {
-        try {
-            return executeWithTokenRefresh(() ->
-                    restClient.get()
-                            .uri(PROFILE_URL)
-                            .retrieve()
-                            .body(ProfilesPayload.class));
-        } catch (Exception e) {
-            throw new SellAutoApiException(e.getMessage());
-        }
+        return executeWithTokenRefresh(() ->
+                restClient.get()
+                        .uri(PROFILE_URL)
+                        .retrieve()
+                        .body(ProfilesPayload.class));
     }
 
     public void banAccount(Long accountId) {
-        try {
-            executeWithTokenRefresh(() ->
-                    restClient.post()
-                            .uri(ADMIN_URL + "/ban/" + accountId)
-                            .retrieve()
-                            .toBodilessEntity());
-        } catch (Exception e) {
-            throw new SellAutoApiException(e.getMessage());
-        }
+        executeWithTokenRefresh(() ->
+                restClient.post()
+                        .uri(ADMIN_URL + "/ban/" + accountId)
+                        .retrieve()
+                        .toBodilessEntity());
     }
 
     public void unBanAccount(Long accountId) {
-        try {
-            executeWithTokenRefresh(() ->
-                    restClient.post()
-                            .uri(ADMIN_URL + "/unban/" + accountId)
-                            .retrieve()
-                            .toBodilessEntity());
-        } catch (Exception e) {
-            throw new SellAutoApiException(e.getMessage());
-        }
+        executeWithTokenRefresh(() ->
+                restClient.post()
+                        .uri(ADMIN_URL + "/unban/" + accountId)
+                        .retrieve()
+                        .toBodilessEntity());
     }
 
 
     private void addAuthHeader(HttpRequest request) {
         LoginResponse loginResponse = getCurrentLogin();
+
+        if (request.getURI().getPath().endsWith(REFRESH_URL)) {
+            return;
+        }
+
         if (loginResponse != null) {
             request.getHeaders().setBearerAuth(loginResponse.getAccessToken());
         }
@@ -555,7 +479,6 @@ public class SellAutoRestClient {
 
         if (statusCode == HttpStatus.UNAUTHORIZED) {
             log.warn("Received 401 Unauthorized response");
-            UI.getCurrent().navigate(LoginView.class);
             throw new UnauthorizedException("Unauthorized");
         }
 

@@ -2,6 +2,7 @@ package com.example.application.views;
 
 import com.example.application.clients.sellauto.client.SellAutoRestClient;
 import com.example.application.views.ads.AdListView;
+import com.example.application.views.chat.ChatView;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.html.Footer;
@@ -70,7 +71,7 @@ public class MainLayout extends AppLayout {
                     VaadinIcon.PLUS.create()));
             nav.addItem(new SideNavItem("Мои объявления", "ads/my",
                     VaadinIcon.LIST.create()));
-            nav.addItem(new SideNavItem("Чаты", "",
+            nav.addItem(new SideNavItem("Чаты", ChatView.class,
                     VaadinIcon.MAILBOX.create()));
         } else {
             nav.addItem(new SideNavItem("Вход / Регистрация", "login",

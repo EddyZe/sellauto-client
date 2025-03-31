@@ -94,6 +94,11 @@ public class Ad extends VerticalLayout implements HasUrlParameter<String> {
 
             try {
                 var currentUser = sellAutoRestClient.getProfile();
+                if (currentUser == null) {
+                    adLay.add(commentAndSendMessageLay);
+                    return;
+                }
+
                 if (currentUser.getUserId().equals(ad.getUser().getUserId()) || currentUser.getAccount().getRole() == Role.ROLE_ADMIN) {
                     var editButton = new Button("Редактировать", e ->
                             UI.getCurrent().navigate("/ads/edit/" + ad.getAdId()));
