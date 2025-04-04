@@ -6,16 +6,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
 @Builder
-public class UserBasePayload {
-    private Long userId;
-
-    private String firstName;
-
-    private String lastName;
-
-    private Double rating;
+public class UserFeedBackPayload {
+    private List<FeedBackPayload> feedbacks;
 }

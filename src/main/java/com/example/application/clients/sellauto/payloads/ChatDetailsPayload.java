@@ -6,16 +6,19 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
 @Builder
-public class UserBasePayload {
-    private Long userId;
+@Data
+public class ChatDetailsPayload {
 
-    private String firstName;
+    private Long chatId;
 
-    private String lastName;
+    private List<MessageBasePayload> messages;
 
-    private Double rating;
+    private List<UserBasePayload> users;
+
+    private AdPayload ad;
 }

@@ -22,6 +22,8 @@ public class ProfilePayload {
 
     private String lastName;
 
+    private Double rating;
+
     private AccountPayload account;
 
     private List<AdProfilePayload> ads;

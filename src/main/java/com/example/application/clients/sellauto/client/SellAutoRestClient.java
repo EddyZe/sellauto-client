@@ -46,6 +46,7 @@ public class SellAutoRestClient {
     private final static String BRANDS_URL = "/api/v1/brands";
     private final static String COLORS_URL = "/api/v1/colors";
     private final static String CHATS_URL = "/api/v1/chats";
+    private final static String FEEDBACK_URL = "/api/v1/feedbacks";
 
     private final static String ADMIN_URL = "/api/v1/admin";
 
@@ -83,12 +84,54 @@ public class SellAutoRestClient {
         }
     }
 
-    public ChatsBasePayload getMyChats() {
+    public FeedBackPayload sendFeedBack(NewFeedBackPayload newFeedback) {
+        return executeWithTokenRefresh(() -> restClient
+                .post()
+                .uri(FEEDBACK_URL)
+                .body(newFeedback)
+                .retrieve()
+                .body(FeedBackPayload.class));
+    }
+
+    public void deleteFeedBack(Long id) {
+        executeWithTokenRefresh(() ->
+                restClient
+                        .delete()
+                        .uri(FEEDBACK_URL + "/" + id)
+                        .retrieve()
+                        .toBodilessEntity());
+    }
+
+    public UserFeedBackPayload getUserFeedBack(Long userId) {
+        return executeWithTokenRefresh(() ->
+                restClient.get()
+                        .uri(FEEDBACK_URL + "/" + userId)
+                        .retrieve()
+                        .body(UserFeedBackPayload.class));
+    }
+
+    public ChatsDetailsPayload getMyChats() {
         return executeWithTokenRefresh(() ->
                 restClient.get()
                         .uri(CHATS_URL + "/my")
                         .retrieve()
-                        .body(ChatsBasePayload.class));
+                        .body(ChatsDetailsPayload.class));
+    }
+
+    public ChatDetailsPayload getChat(Long chatId) {
+        return executeWithTokenRefresh(() ->
+                restClient.get()
+                        .uri(CHATS_URL + "/" + chatId)
+                        .retrieve()
+                        .body(ChatDetailsPayload.class));
+    }
+
+    public ChatMessagesPayload getChatMessages(Long chatId) {
+        return executeWithTokenRefresh(() ->
+                restClient.get()
+                        .uri(CHATS_URL + "/%d/messages".formatted(chatId))
+                        .retrieve()
+                        .body(ChatMessagesPayload.class));
     }
 
     public AdsDetailsPayload getAds() {

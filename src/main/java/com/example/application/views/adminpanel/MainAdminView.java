@@ -270,7 +270,7 @@ public class MainAdminView extends HorizontalLayout {
              BufferedOutputStream bos = new BufferedOutputStream(Files.newOutputStream(backup))) {
 
             byte[] buffer = new byte[1024];
-            int read = 0;
+            int read;
 
             while ((read = bis.read(buffer)) != -1) {
                 bos.write(buffer, 0, read);
@@ -292,6 +292,7 @@ public class MainAdminView extends HorizontalLayout {
 
     private void createUserList() {
         try {
+            var currentUser = sellAutoRestClient.getProfile();
             VirtualList<ProfilePayload> profiles = new VirtualList<>();
             profiles.setItems(sellAutoRestClient.getProfiles().getProfiles());
             profiles.setRenderer(new ComponentRenderer<>(profile -> {
@@ -301,7 +302,7 @@ public class MainAdminView extends HorizontalLayout {
                 if (profile.getAccount() != null) {
                     var link = new RouterLink(profile.getAccount().getEmail(), UserProfileView.class,
                             profile.getUserId().toString());
-                    var banButton = createBanButton(profile);
+                    var banButton = createBanButton(profile, currentUser);
 
                     var linkLay = new HorizontalLayout(link);
                     linkLay.setWidthFull();
@@ -318,10 +319,14 @@ public class MainAdminView extends HorizontalLayout {
         }
     }
 
-    private Button createBanButton(ProfilePayload profile) {
+    private Button createBanButton(ProfilePayload profile, ProfilePayload currentUser) {
         var btn = new Button(profile.getAccount().isBlocked() ? "Разблокировать" : "Заблокировать");
         btn.addClickListener(e -> {
             try {
+                if (profile.getUserId().equals(currentUser.getUserId())) {
+                    Notification.show("Нельзя заблокировать/разблокировать себя!", 5000, Notification.Position.TOP_CENTER);
+                    return;
+                }
                 if (profile.getAccount().isBlocked()) {
                     profile.getAccount().setBlocked(false);
                     sellAutoRestClient.unBanAccount(profile.getAccount().getAccountId());

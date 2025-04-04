@@ -3,7 +3,9 @@ package com.example.application.views.profile;
 
 import com.example.application.clients.sellauto.client.SellAutoRestClient;
 import com.example.application.clients.sellauto.payloads.EditProfilePayload;
+import com.example.application.clients.sellauto.payloads.FeedBackPayload;
 import com.example.application.clients.sellauto.payloads.ProfilePayload;
+import com.example.application.components.FeedBackComment;
 import com.example.application.enums.Role;
 import com.example.application.exceptions.SellAutoApiException;
 import com.example.application.views.MainLayout;
@@ -12,13 +14,16 @@ import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.virtuallist.VirtualList;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.validator.RegexpValidator;
 import com.vaadin.flow.data.validator.StringLengthValidator;
 import com.vaadin.flow.router.Menu;
@@ -99,6 +104,15 @@ public class ProfileView extends VerticalLayout {
 
 
             infoLayout.add(userIds, adsSize);
+            var titleFeedbacks = new H3("Ваши отзывы");
+            titleFeedbacks.setWidthFull();
+            var myFeedback = new VirtualList<FeedBackPayload>();
+            myFeedback.setItems(sellAutoRestClient.getUserFeedBack(profile.getUserId()).getFeedbacks());
+            myFeedback.setSizeFull();
+            myFeedback.setRenderer(new ComponentRenderer<>(f ->
+                    new FeedBackComment(f, profile, sellAutoRestClient)));
+            infoLayout.add(titleFeedbacks, myFeedback);
+
             editLayout.add(infoLayout);
 
             add(headerLayout, editLayout);

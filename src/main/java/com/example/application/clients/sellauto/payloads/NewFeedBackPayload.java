@@ -10,12 +10,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 @Builder
-public class UserBasePayload {
-    private Long userId;
-
-    private String firstName;
-
-    private String lastName;
-
-    private Double rating;
+public class NewFeedBackPayload {
+    private Long receiverId;
+    private Integer estimation;
+    private String text;
 }

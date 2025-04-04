@@ -8,6 +8,7 @@ import com.example.application.clients.sellauto.payloads.PriceBasePayload;
 import com.example.application.enums.Role;
 import com.example.application.exceptions.SellAutoApiException;
 import com.example.application.views.MainLayout;
+import com.example.application.views.profile.UserProfileView;
 import com.example.application.views.util.ComponentRenders;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -21,6 +22,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouterLink;
 import lombok.extern.slf4j.Slf4j;
 
 
@@ -48,21 +50,31 @@ public class Ad extends VerticalLayout implements HasUrlParameter<String> {
 
             var car = ad.getCar();
 
-            var title = new H3("%s %s, %s  (%.2f ₽)".formatted(
+            var title = new H3("%s %s, %s  (%d ₽)".formatted(
                     car.getBrand().getTitle(),
                     car.getModel().getTitle(),
                     car.getYear(),
-                    ad.getPrices().getLast().getPrice())
+                    ad.getPrices().getLast().getPrice().intValue())
             );
             title.setWidthFull();
 
             var carInfo = new VerticalLayout();
             var images = generatePhotoLayout(ad);
-            carInfo.setWidth("20%");
+            carInfo.setWidth("30%");
             var horizontalLayout = new HorizontalLayout(carInfo, images);
             horizontalLayout.setWidthFull();
+            var user = ad.getUser();
 
+            var sellerLay = new HorizontalLayout(new Span("Продавец: "));
 
+            var userLink = new RouterLink(
+                    "%s (%.1f ⭐)".formatted(user.getFirstName(), user.getRating() == null ? 0. : user.getRating()),
+                    UserProfileView.class, user.getUserId().toString()
+            );
+            sellerLay.setWidthFull();
+            sellerLay.add(userLink);
+
+            carInfo.add(sellerLay);
             carInfo.add(new Span("Пробег: %d км".formatted(car.getMileage())));
             carInfo.add(new Span("Бренд: %s".formatted(car.getBrand().getTitle())));
             carInfo.add(new Span("Модель: %s".formatted(car.getModel().getTitle())));
