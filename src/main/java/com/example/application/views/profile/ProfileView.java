@@ -101,9 +101,10 @@ public class ProfileView extends VerticalLayout {
 
             var userIds = new Span("Ваш ID: %d".formatted(profile.getUserId()));
             var adsSize = new Span("Опубликовано объявлений: %d".formatted(profile.getAds().size()));
+            var rating = new Span("Ваш рейтинг: %.1f ⭐".formatted(profile.getRating()));
 
 
-            infoLayout.add(userIds, adsSize);
+            infoLayout.add(userIds, adsSize, rating);
             var titleFeedbacks = new H3("Ваши отзывы");
             titleFeedbacks.setWidthFull();
             var myFeedback = new VirtualList<FeedBackPayload>();
