@@ -5,6 +5,7 @@ import com.example.application.views.ads.AdListView;
 import com.example.application.views.chat.ChatView;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Footer;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Header;
@@ -23,6 +24,7 @@ import com.vaadin.flow.theme.lumo.LumoUtility;
  */
 @Layout
 @AnonymousAllowed
+@CssImport(value= "./themes/sellauto-client/styles.css", themeFor = "vaadin-app-layout")
 public class MainLayout extends AppLayout {
 
     private final SellAutoRestClient sellAutoRestClient;
@@ -41,7 +43,7 @@ public class MainLayout extends AppLayout {
         toggle.setAriaLabel("Menu toggle");
 
         viewTitle = new H1();
-        viewTitle.addClassNames(LumoUtility.FontSize.LARGE, LumoUtility.Margin.NONE);
+        viewTitle.addClassNames(LumoUtility.FontSize.LARGE, LumoUtility.Margin.NONE, "color-text");
 
         addToNavbar(true, toggle, viewTitle);
     }
@@ -50,6 +52,7 @@ public class MainLayout extends AppLayout {
         Span appName = new Span("Sell Auto");
         appName.addClassNames(LumoUtility.FontWeight.SEMIBOLD, LumoUtility.FontSize.LARGE);
         Header header = new Header(appName);
+        header.addClassNames("header-main");
 
         Scroller scroller = new Scroller(createNavigation());
 

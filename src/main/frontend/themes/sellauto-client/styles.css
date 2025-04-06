@@ -1,5 +1,35 @@
 @import url('./main-layout.css');
 
+html {
+    --lumo-font-family: Times;
+    --lumo-primary-text-color: #ff1a1a;
+    --lumo-primary-color: red;
+    --navbar-background-color: red;
+    --navbar-text-color: white;
+}
+
+a {
+    color: #006fff;
+}
+
+.color-text {
+    color: #ececec;
+}
+
+.header-main {
+    background: #ff1515;
+    color: #ececec;
+}
+
+vaadin-app-layout::part(navbar) {
+    background: #ff1515;
+}
+
+vaadin-app-layout::part(drawer) {
+    border: none;
+    margin-top: 1px;
+}
+
 h3 {
     margin: 5px;
     padding-bottom: 10px;
