@@ -31,7 +31,7 @@ public class SingUpView extends VerticalLayout {
 
     private final SellAutoRestClient client;
 
-    private Binder<SingUpPayload> binder = new BeanValidationBinder<>(SingUpPayload.class);
+    private final Binder<SingUpPayload> binder = new BeanValidationBinder<>(SingUpPayload.class);
 
     public SingUpView(SellAutoRestClient client) {
         this.client = client;
@@ -146,7 +146,13 @@ public class SingUpView extends VerticalLayout {
 
         binder.forField(password)
                 .withValidator(
-                        new StringLengthValidator("Пароль должен быть 6-30 символов", 6, 20)
+                        s -> {
+                            if (s.length() < 6 || s.length() > 20) {
+                                return false;
+                            }
+
+                            return s.matches("^(?=.*[A-Z])(?=.*[a-z]).+$");
+                        }, "Пароль должен быть не менее 6 и не более 20 символов и содержать хотя бы одну строчную и заглавные буквы!"
                 )
                 .bind(SingUpPayload::getPassword, SingUpPayload::setPassword);
 

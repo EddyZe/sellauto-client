@@ -148,7 +148,7 @@ public class UserProfileView extends HorizontalLayout implements HasUrlParameter
                         .estimation(ratingComponent.getRating())
                         .build());
 
-                feedbacks.add(feedback);
+                feedbacks.addFirst(feedback);
                 comment.clear();
                 feedbackTitle.setText("Отзывы (%d)".formatted(feedbacks.size()));
 
