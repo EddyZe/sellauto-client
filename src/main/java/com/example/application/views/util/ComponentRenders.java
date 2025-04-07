@@ -14,6 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
 
 import java.io.IOException;
+import java.text.NumberFormat;
+import java.util.Locale;
 import java.util.Objects;
 
 
@@ -22,7 +24,11 @@ public class ComponentRenders {
 
     public static VerticalLayout generateComponentAdList(AdPayload ad, Resource photoRes, String photoMaxWidth, String photoMaxHeight) {
         var mainLay = new HorizontalLayout();
-        var link = new RouterLink("%s %s рублей".formatted(ad.getTitle(), ad.getPrices().getLast().getPrice()), Ad.class,
+        var link = new RouterLink("%s %s рублей".formatted(
+                ad.getTitle(),
+                NumberFormat.getInstance(Locale.of("ru", "RU"))
+                        .format(ad.getPrices().getLast().getPrice().intValue())),
+                Ad.class,
                 ad.getAdId().toString());
 
         var stats = new Span(ad.getIsActive() ? "Продается" : "Продано");

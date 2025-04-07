@@ -6,6 +6,7 @@ import com.example.application.clients.sellauto.payloads.AdPayload;
 import com.example.application.clients.sellauto.payloads.BrandDetailPayload;
 import com.example.application.clients.sellauto.payloads.ColorBasePayload;
 import com.example.application.clients.sellauto.payloads.ModelBasePayload;
+import com.example.application.enums.Sort;
 import com.example.application.exceptions.SellAutoApiException;
 import com.example.application.views.MainLayout;
 import com.example.application.views.util.ComponentRenders;
@@ -101,6 +102,23 @@ public class AdListView extends HorizontalLayout {
             var yearLay = new HorizontalLayout(yearFrom, yearTo);
             yearLay.setWidthFull();
 
+            var sortYear = new Select<Sort>();
+            sortYear.setLabel("Сортировка по годам");
+            sortYear.setItems(Sort.values());
+            sortYear.setRenderer(new ComponentRenderer<Component, Sort>(s -> new Span(s.toString())));
+            sortYear.setEmptySelectionAllowed(true);
+            sortYear.setWidthFull();
+            sortYear.setEmptySelectionCaption("Выбрать тип сортировки");
+
+            var sortPrice = new Select<Sort>();
+            sortPrice.setLabel("Сортировка по цене");
+            sortPrice.setWidthFull();
+            sortPrice.setItems(Sort.values());
+            sortPrice.setRenderer(new ComponentRenderer<Component, Sort>(s -> new Span(s.toString())));
+            sortPrice.setEmptySelectionAllowed(true);
+            sortPrice.setWidthFull();
+            sortPrice.setEmptySelectionCaption("Выбрать тип сортировки");
+
             var btn = new Button("Найти", e -> {
                 if (yearFrom.getValue() != null && !checkYear(yearFrom.getValue().intValue())) {
                     Notification.show("Год должен быть не менее 1900 и не более текущего...", 5000, Notification.Position.TOP_CENTER);
@@ -134,10 +152,20 @@ public class AdListView extends HorizontalLayout {
                     params.put("year-to", String.valueOf(yearTo.getValue().intValue()));
                 }
 
+                if (sortYear.getValue() != null) {
+                    params.put("sort-year", sortYear.getValue().name());
+                }
+
+                if (sortPrice.getValue() != null) {
+                    params.put("sort-price", sortPrice.getValue().name());
+                }
+
                 ads.setItems(sellAutoRestClient.getAds(params).getAds());
             });
 
-            filterBlock.add(colors, brandsLay, yearLay, btn);
+            btn.setWidthFull();
+
+            filterBlock.add(colors, brandsLay, yearLay, sortYear, sortPrice, btn);
 
             add(ads, filterBlock);
         } catch (SellAutoApiException e) {

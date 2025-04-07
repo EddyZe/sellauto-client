@@ -25,6 +25,9 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
 import lombok.extern.slf4j.Slf4j;
 
+import java.text.NumberFormat;
+import java.util.Locale;
+
 
 @Slf4j
 @Route(value = "/ads", layout = MainLayout.class)
@@ -50,11 +53,11 @@ public class Ad extends VerticalLayout implements HasUrlParameter<String> {
 
             var car = ad.getCar();
 
-            var title = new H3("%s %s, %s  (%d ₽)".formatted(
+            var title = new H3("%s %s, %s  (%s ₽)".formatted(
                     car.getBrand().getTitle(),
                     car.getModel().getTitle(),
                     car.getYear(),
-                    ad.getPrices().getLast().getPrice().intValue())
+                    NumberFormat.getInstance(Locale.of("ru", "RU")).format(ad.getPrices().getLast().getPrice().intValue()))
             );
             title.setWidthFull();
 
@@ -99,7 +102,9 @@ public class Ad extends VerticalLayout implements HasUrlParameter<String> {
 
             adLay.add(title,
                     horizontalLayout,
-                    new H4("График изменения цен. Текущая цена: %.2f ₽".formatted(ad.getPrices().getFirst().getPrice())),
+                    new H4("График изменения цен. Текущая цена: %s ₽".formatted(
+                            NumberFormat.getInstance().format(ad.getPrices().getLast().getPrice().intValue())
+                    )),
                     chartLay,
                     new H4("Комментарий от продавца"),
                     comment);
