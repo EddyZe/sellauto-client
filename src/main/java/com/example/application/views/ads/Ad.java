@@ -213,7 +213,7 @@ public class Ad extends VerticalLayout implements HasUrlParameter<String> {
             return img;
         } catch (Exception e) {
             log.error("error get image: {}", e.getMessage());
-            return null;
+            return new Image("/", "img");
         }
     }
 

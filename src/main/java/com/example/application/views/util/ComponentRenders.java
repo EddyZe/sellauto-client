@@ -2,6 +2,7 @@ package com.example.application.views.util;
 
 import com.example.application.clients.sellauto.payloads.AdPayload;
 import com.example.application.clients.sellauto.payloads.PhotoBasePayload;
+import com.example.application.exceptions.SellAutoApiException;
 import com.example.application.views.ads.Ad;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
@@ -43,8 +44,12 @@ public class ComponentRenders {
 
         if (ad.getCar() != null && !ad.getCar().getPhotos().isEmpty()) {
             var firstPhoto = ad.getCar().getPhotos().getFirst();
-            var photo = createImage(photoRes, firstPhoto, photoMaxWidth, photoMaxHeight);
-            mainLay.add(photo);
+            try {
+                var photo = createImage(photoRes, firstPhoto, photoMaxWidth, photoMaxHeight);
+                mainLay.add(photo);
+            } catch (SellAutoApiException e) {
+                log.error(e.getMessage());
+            }
         }
 
         var car = ad.getCar();

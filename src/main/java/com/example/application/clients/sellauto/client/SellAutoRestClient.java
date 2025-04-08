@@ -22,6 +22,7 @@ import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.http.converter.ResourceHttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
@@ -47,7 +48,7 @@ public class SellAutoRestClient {
     private final static String COLORS_URL = "/api/v1/colors";
     private final static String CHATS_URL = "/api/v1/chats";
     private final static String FEEDBACK_URL = "/api/v1/feedbacks";
-
+    private final static String LOGOUT = "/logout";
     private final static String ADMIN_URL = "/api/v1/admin";
 
 
@@ -101,6 +102,28 @@ public class SellAutoRestClient {
                         .retrieve()
                         .toBodilessEntity());
     }
+
+    public void logout() {
+        try {
+            executeWithTokenRefresh(() ->
+                    restClient.get()
+                            .uri(LOGOUT)
+                            .retrieve()
+                            .toBodilessEntity());
+        } catch (SellAutoApiException e) {
+            log.error(e.getMessage());
+        } finally {
+            VaadinSession session = VaadinSession.getCurrent();
+            if (session != null) {
+                session.close();
+            }
+            SecurityContextHolder.clearContext();
+
+            UI.getCurrent().accessSynchronously(() ->
+                    UI.getCurrent().navigate(LoginView.class));
+        }
+    }
+
 
     public UserFeedBackPayload getUserFeedBack(Long userId) {
         return executeWithTokenRefresh(() ->
@@ -406,6 +429,7 @@ public class SellAutoRestClient {
     private void refreshToken() {
         LoginResponse currentLogin = getCurrentLogin();
         if (currentLogin == null) {
+            VaadinSession.getCurrent().setAttribute(LoginResponse.class, null);
             throw new SellAutoApiException("Not authenticated");
         }
 

@@ -54,11 +54,17 @@ public class ChatView extends HorizontalLayout {
         var chatList = new VirtualList<ChatDetailsPayload>();
         chatList.setItems(chats.getChats());
         chatList.setRenderer(new ComponentRenderer<>(chat -> {
+            var chatView = new HorizontalLayout();
             var ad = chat.getAd();
             var car = ad.getCar();
             var photoPayload = car.getPhotos().getFirst();
-            var photoRes = sellAutoRestClient.getPhoto(photoPayload.getPhotoId());
-            var photo = ComponentRenders.createImage(photoRes, photoPayload, "60px", "40px");
+            try {
+                var photoRes = sellAutoRestClient.getPhoto(photoPayload.getPhotoId());
+                var photo = ComponentRenders.createImage(photoRes, photoPayload, "60px", "40px");
+                chatView.add(photo);
+            } catch (SellAutoApiException e) {
+                log.error("SellAutoRestClient exception", e);
+            }
             var titleChat = "%s %s %s (%d ₽)".formatted(
                     car.getBrand().getTitle(),
                     car.getModel().getTitle(),
@@ -68,10 +74,9 @@ public class ChatView extends HorizontalLayout {
 
 
             var link = new RouterLink(titleChat, OpenChatView.class, chat.getChatId().toString());
-            var chatView = new HorizontalLayout(photo, link);
             chatView.setWidth("90%");
             chatView.setClassName("custom-card");
-
+            chatView.add(link);
             chatView.addClickListener(event -> openChat.setItems(chat.getMessages()));
             return chatView;
         }));

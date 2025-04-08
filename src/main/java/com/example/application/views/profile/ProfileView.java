@@ -63,6 +63,9 @@ public class ProfileView extends VerticalLayout {
             helloMessage.setWidthFull();
             headerLayout.add(helloMessage);
             addAdminPanelButton(profile, headerLayout);
+            var exitButton = new Button("Выход", event ->
+                    sellAutoRestClient.logout());
+            headerLayout.add(exitButton);
 
             var dataLayout = new VerticalLayout();
             dataLayout.setSizeFull();
