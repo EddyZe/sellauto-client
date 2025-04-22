@@ -50,6 +50,17 @@ h3 {
     position: relative;
 }
 
+.custom-notification-block {
+    background-color: #00df10;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1),
+    0 2px 4px rgba(0, 0, 0, 0.06);
+    padding: 10px;
+    color: white;
+    overflow: hidden;
+    position: relative;
+}
+
 .custom-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15),

@@ -28,7 +28,7 @@ public class ComponentRenders {
         var link = new RouterLink("%s %s рублей".formatted(
                 ad.getTitle(),
                 NumberFormat.getInstance(Locale.of("ru", "RU"))
-                        .format(ad.getPrices().getLast().getPrice().intValue())),
+                        .format(ad.getPrices().getLast().getPrice() == null ? 0 : ad.getPrices().getLast().getPrice())),
                 Ad.class,
                 ad.getAdId().toString());
 
@@ -58,7 +58,9 @@ public class ComponentRenders {
                 car.getTransmissionType().toString(),
                 car.getMileage()));
         var vin = new Span("Vin: " + car.getVin());
-        var drive = new Span("%s %s %d".formatted(car.getDrive().toString(), car.getColor().getTitle(), car.getYear()));
+        var drive = new Span("%s %s %d".formatted(car.getDrive().toString(),
+                car.getColor() == null ? "Не указан" : car.getColor().getTitle(),
+                car.getYear()));
 
 
         mainLay.add(new VerticalLayout(linkAndStatus, carName, drive, vin));

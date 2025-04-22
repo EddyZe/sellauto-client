@@ -50,6 +50,8 @@ public class SellAutoRestClient {
     private final static String FEEDBACK_URL = "/api/v1/feedbacks";
     private final static String LOGOUT = "/logout";
     private final static String ADMIN_URL = "/api/v1/admin";
+    private final static String SEND_RECOVERY_CODE = "/api/v1/auth/sendRecoveryCode";
+    private final static String RESET_PASSWORD = "/api/v1/auth/resetPassword";
 
 
     public SellAutoRestClient(@Value("${sell-auto.base-url}") String baseUrl, ObjectMapper objectMapper) {
@@ -82,6 +84,32 @@ public class SellAutoRestClient {
                     .body(ProfilePayload.class);
         } catch (Exception e) {
             throw new SellAutoApiException(e.getMessage());
+        }
+    }
+
+    public void sendRecoveryCode(String email) {
+        try {
+            restClient.post()
+                    .uri(SEND_RECOVERY_CODE)
+                    .body(RequestSendRecoveryCodePayload.builder()
+                            .email(email)
+                            .build())
+                    .retrieve()
+                    .toBodilessEntity();
+        } catch (Exception e) {
+            throw new SellAutoApiException("Что-то пошло не так");
+        }
+    }
+
+    public void resetPassword(ResetPasswordPayload resetPassword) {
+        try {
+            restClient.post()
+                    .uri(RESET_PASSWORD)
+                    .body(resetPassword)
+                    .retrieve()
+                    .toBodilessEntity();
+        } catch (Exception e) {
+            throw new SellAutoApiException("Проверьте валидность введенного пароля и кода.");
         }
     }
 

@@ -70,12 +70,17 @@ public class LoginView extends VerticalLayout {
         Span span = new Span("Нет аккаунта?");
         var hor = new HorizontalLayout(span, routerLink);
 
+        RouterLink resetPasswordLink = new RouterLink("Восстановить", ResetPasswordView.class);
+        Span resetPasswordSpan = new Span("Забыли пароль?");
+        var resetPasswordLay = new HorizontalLayout(resetPasswordSpan, resetPasswordLink);
+
         FormLayout formLayout = new FormLayout();
-        formLayout.add(title, email, password, loginButton, hor);
+        formLayout.add(title, email, password, loginButton, resetPasswordLay, hor);
         formLayout.setColspan(title, 2);
         formLayout.setColspan(email, 2);
         formLayout.setColspan(password, 2);
         formLayout.setColspan(loginButton, 2);
+        formLayout.setColspan(resetPasswordLay, 1);
         formLayout.setColspan(hor, 1);
         formLayout.setWidth("30%");
         formLayout.setClassName("custom-card");
