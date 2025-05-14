@@ -6,7 +6,7 @@ import com.example.application.clients.sellauto.payloads.AdPayload;
 import com.example.application.clients.sellauto.payloads.BrandDetailPayload;
 import com.example.application.clients.sellauto.payloads.ColorBasePayload;
 import com.example.application.clients.sellauto.payloads.ModelBasePayload;
-import com.example.application.enums.Sort;
+import com.example.application.enums.*;
 import com.example.application.exceptions.SellAutoApiException;
 import com.example.application.views.MainLayout;
 import com.example.application.views.util.ComponentRenders;
@@ -20,6 +20,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.NumberField;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.virtuallist.VirtualList;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.Menu;
@@ -51,11 +52,12 @@ public class AdListView extends HorizontalLayout {
     protected void onAttach(AttachEvent attachEvent) {
         try {
             var ads = createAdList();
-            ads.setHeightFull();
+            ads.setHeight("1050px");
 
             var titleFilter = new H3("Фильтр");
             titleFilter.setWidthFull();
             var filterBlock = new VerticalLayout(titleFilter);
+            filterBlock.setClassName("filter-block");
             filterBlock.setWidth("35.5%");
 
             var colors = new Select<ColorBasePayload>();
@@ -119,6 +121,54 @@ public class AdListView extends HorizontalLayout {
             sortPrice.setWidthFull();
             sortPrice.setEmptySelectionCaption("Выбрать тип сортировки");
 
+            var priceFrom = new NumberField();
+            priceFrom.setPlaceholder("Цена от...");
+            priceFrom.setWidth("50%");
+            var priceTo = new NumberField();
+            priceTo.setPlaceholder("Цена до...");
+            priceTo.setWidth("50%");
+            var filterPrices = new HorizontalLayout(priceFrom, priceTo);
+
+            var mileageFrom = new NumberField();
+            mileageFrom.setPlaceholder("Пробег от...");
+            mileageFrom.setWidth("50%");
+            var mileageTo = new NumberField();
+            mileageTo.setPlaceholder("Пробег до...");
+            mileageTo.setWidth("50%");
+            var mileageFilter = new HorizontalLayout(mileageFrom, mileageTo);
+
+            var drive = new Select<DriveMode>();
+            drive.setLabel("Тип привода");
+            drive.setWidthFull();
+            drive.setItems(DriveMode.values());
+            drive.setEmptySelectionAllowed(true);
+            drive.setEmptySelectionCaption("Выбрать тип привода");
+            drive.setRenderer(new ComponentRenderer<Component, DriveMode>(s -> new Span(s.toString())));
+
+            var body = new Select<BodyType>();
+            body.setLabel("Тип Кузова");
+            body.setWidthFull();
+            body.setItems(BodyType.values());
+            body.setEmptySelectionAllowed(true);
+            body.setEmptySelectionCaption("Выбрать тип Кузова");
+            body.setRenderer(new ComponentRenderer<Component, BodyType>(s -> new Span(s.toString())));
+
+            var engine = new Select<EngineType>();
+            engine.setLabel("Тип двигателя");
+            engine.setWidthFull();
+            engine.setItems(EngineType.values());
+            engine.setEmptySelectionAllowed(true);
+            engine.setEmptySelectionCaption("Выбрать тип двигателя");
+            engine.setRenderer(new ComponentRenderer<Component, EngineType>(s -> new Span(s.toString())));
+
+            var transmission = new Select<TransmissionType>();
+            transmission.setLabel("Тип КПП");
+            transmission.setWidthFull();
+            transmission.setItems(TransmissionType.values());
+            transmission.setEmptySelectionAllowed(true);
+            transmission.setEmptySelectionCaption("Выбрать тип КПП");
+            transmission.setRenderer(new ComponentRenderer<Component, TransmissionType>(s -> new Span(s.toString())));
+
             var btn = new Button("Найти", e -> {
                 if (yearFrom.getValue() != null && !checkYear(yearFrom.getValue().intValue())) {
                     Notification.show("Год должен быть не менее 1900 и не более текущего...", 5000, Notification.Position.TOP_CENTER);
@@ -160,12 +210,56 @@ public class AdListView extends HorizontalLayout {
                     params.put("sort-price", sortPrice.getValue().name());
                 }
 
+                if (priceFrom.getValue() != null) {
+                    params.put("price-from", priceFrom.getValue().toString());
+                }
+
+                if (priceTo.getValue() != null) {
+                    params.put("price-to", priceTo.getValue().toString());
+                }
+
+                if (mileageFrom.getValue() != null) {
+                    params.put("mileage-from", String.valueOf(mileageFrom.getValue().intValue()));
+                }
+
+                if (mileageTo.getValue() != null) {
+                    params.put("mileage-to", String.valueOf(mileageTo.getValue().intValue()));
+                }
+
+                if (drive.getValue() != null) {
+                    params.put("drive", drive.getValue().toString());
+                }
+
+                if (body.getValue() != null) {
+                    params.put("body", body.getValue().toString());
+                }
+
+                if (engine.getValue() != null) {
+                    params.put("engine", engine.getValue().toString());
+                }
+
+                if (transmission.getValue() != null) {
+                    params.put("transmission", engine.getValue().toString());
+                }
+
                 ads.setItems(sellAutoRestClient.getAds(params).getAds());
             });
 
             btn.setWidthFull();
-
-            filterBlock.add(colors, brandsLay, yearLay, sortYear, sortPrice, btn);
+            filterBlock.add(
+                    colors,
+                    brandsLay,
+                    yearLay,
+                    sortYear,
+                    sortPrice,
+                    new Span("Искать по цене"),
+                    filterPrices,
+                    new Span("Пробег"),
+                    mileageFilter,
+                    drive,
+                    engine,
+                    transmission,
+                    btn);
 
             add(ads, filterBlock);
         } catch (SellAutoApiException e) {
@@ -181,7 +275,6 @@ public class AdListView extends HorizontalLayout {
 
     private VirtualList<AdPayload> createAdList() {
         var ads = new VirtualList<AdPayload>();
-        ads.setHeightFull();
         ads.setItems(sellAutoRestClient.getAds().getAds());
         ads.setRenderer(
                 new ComponentRenderer<>(ad -> {

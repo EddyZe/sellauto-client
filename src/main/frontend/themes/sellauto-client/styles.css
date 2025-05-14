@@ -67,6 +67,11 @@ h3 {
     0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
+.filter-block {
+    padding: 5px;
+    margin-bottom: 10px;
+}
+
 .ad-sold {
     border: 1px solid red;
     background-color: #f8d7da;

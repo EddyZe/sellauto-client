@@ -16,6 +16,7 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -100,7 +101,12 @@ public class Ad extends VerticalLayout implements HasUrlParameter<String> {
             var comment = new Div(ad.getDescription());
             comment.setSizeFull();
 
-            adLay.add(title,
+            var buttonFavorite = VaadinIcon.HEART.create();
+            buttonFavorite.setColor("gray");
+
+            var t = new HorizontalLayout(title, buttonFavorite);
+            t.setWidthFull();
+            adLay.add(t,
                     horizontalLayout,
                     new H4("График изменения цен. Текущая цена: %s ₽".formatted(
                             NumberFormat.getInstance().format(ad.getPrices().getLast().getPrice().intValue())
@@ -115,6 +121,25 @@ public class Ad extends VerticalLayout implements HasUrlParameter<String> {
                     adLay.add(commentAndSendMessageLay);
                     return;
                 }
+
+                var favs = sellAutoRestClient.getFavorites(currentUser.getUserId())
+                        .stream()
+                        .filter(f -> f.getAdId().equals(ad.getAdId()))
+                        .findFirst();
+
+                if (favs.isPresent()) {
+                    buttonFavorite.setColor("red");
+                }
+
+                buttonFavorite.addClickListener(event -> {
+                    if (buttonFavorite.getColor().equals("red")) {
+                        sellAutoRestClient.removeAdFavorite(currentUser.getUserId(), ad.getAdId());
+                        buttonFavorite.setColor("gray");
+                        return;
+                    }
+                    sellAutoRestClient.addAdFavorite(currentUser.getUserId(), ad.getAdId());
+                    buttonFavorite.setColor("red");
+                });
 
                 if (currentUser.getUserId().equals(ad.getUser().getUserId()) || currentUser.getAccount().getRole() == Role.ROLE_ADMIN) {
                     var editButton = new Button("Редактировать", e ->

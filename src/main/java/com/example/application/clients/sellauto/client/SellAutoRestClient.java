@@ -27,6 +27,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -134,12 +135,12 @@ public class SellAutoRestClient {
     public void logout() {
         try {
             executeWithTokenRefresh(() ->
-                    restClient.get()
+                    restClient.post()
                             .uri(LOGOUT)
                             .retrieve()
                             .toBodilessEntity());
         } catch (SellAutoApiException e) {
-            log.error(e.getMessage());
+            log.error("logout {}", e.getMessage());
         } finally {
             VaadinSession session = VaadinSession.getCurrent();
             if (session != null) {
@@ -294,17 +295,6 @@ public class SellAutoRestClient {
         }
     }
 
-    public ColorBasePayload getColorTitle(String tile) {
-        try {
-            return restClient.get()
-                    .uri(COLORS_URL + "/" + tile)
-                    .retrieve()
-                    .body(ColorBasePayload.class);
-        } catch (Exception e) {
-            throw new SellAutoApiException(e.getMessage());
-        }
-    }
-
     public void createColor(ColorBasePayload color) {
         executeWithTokenRefresh(() ->
                 restClient.post()
@@ -361,14 +351,6 @@ public class SellAutoRestClient {
                         .toBodilessEntity());
     }
 
-    public BrandDetailPayload getBrand(Integer brandId) {
-        return executeWithTokenRefresh(() ->
-                restClient.get()
-                        .uri(ADMIN_URL + "/brands/" + brandId)
-                        .retrieve()
-                        .body(BrandDetailPayload.class));
-    }
-
     public void deleteBrand(Integer brandId) {
         executeWithTokenRefresh(() ->
                 restClient.delete()
@@ -410,7 +392,6 @@ public class SellAutoRestClient {
         var mbb = new MultipartBodyBuilder();
         photos.forEach(photo -> mbb.part("files", photo));
         mbb.part("ad", createNewAdPayload);
-        System.out.println("Request body: " + mbb.build());
         return executeWithTokenRefresh(() -> restClient.post()
                 .uri(ADS_LIST_URL + "/create")
                 .contentType(MediaType.MULTIPART_FORM_DATA)
@@ -488,7 +469,7 @@ public class SellAutoRestClient {
             } catch (Exception refreshEx) {
                 VaadinSession.getCurrent().close();
                 UI.getCurrent().navigate(LoginView.class);
-                return null;
+                throw new SellAutoApiException(refreshEx.getMessage());
             }
         }
     }
@@ -534,6 +515,46 @@ public class SellAutoRestClient {
                         .toBodilessEntity());
     }
 
+    public void addAdFavorite(Long userId, Long adId) {
+        executeWithTokenRefresh(() ->
+                restClient.post()
+                        .uri(ADS_LIST_URL + "/addFavorite")
+                        .body(FavoritePayload.builder()
+                                .adId(adId)
+                                .userId(userId)
+                                .build())
+                        .retrieve()
+                        .toBodilessEntity()
+        );
+    }
+
+    public void removeAdFavorite(Long userId, Long adId) {
+        executeWithTokenRefresh(() ->
+                restClient.post()
+                        .uri(ADS_LIST_URL + "/removeFavorite")
+                        .body(FavoritePayload.builder()
+                                .adId(adId)
+                                .userId(userId)
+                                .build())
+                        .retrieve()
+                        .toBodilessEntity()
+        );
+    }
+
+    public List<AdPayload> getFavorites(Long userId) {
+        var result = executeWithTokenRefresh(() ->
+                restClient.get()
+                        .uri(ADS_LIST_URL + "/favorites/" + userId)
+                        .retrieve()
+                        .body(AdsDetailsPayload.class)
+        );
+
+        if (result != null)
+            return result.getAds();
+
+        return Collections.emptyList();
+    }
+
 
     private void addAuthHeader(HttpRequest request) {
         LoginResponse loginResponse = getCurrentLogin();
@@ -573,21 +594,21 @@ public class SellAutoRestClient {
         var statusCode = response.getStatusCode();
 
         if (statusCode == HttpStatus.UNAUTHORIZED) {
-            log.warn("Received 401 Unauthorized response");
+            log.debug("Received 401 Unauthorized response {}", new String(response.getBody().readAllBytes()));
             throw new UnauthorizedException("Unauthorized");
         }
 
         if (statusCode == HttpStatus.FORBIDDEN) {
-            log.warn("Received 403 Forbidden response");
+            log.debug("Received 403 Forbidden response {}", new String(response.getBody().readAllBytes()));
             throw new ForbiddenException("Forbidden");
         }
 
         if (statusCode.is5xxServerError()) {
-            log.warn("Received 5xx Server Error");
+            log.debug("Received 5xx Server Error {}", new String(response.getBody().readAllBytes()));
             throw new SellAutoApiException("Server error: " + statusCode);
         }
 
-        if (!statusCode.is2xxSuccessful()) {
+        if (!statusCode.is2xxSuccessful() && !statusCode.is3xxRedirection() && !statusCode.is1xxInformational()) {
             throw new SellAutoApiException(new String(response.getBody().readAllBytes()));
         }
         return false;
